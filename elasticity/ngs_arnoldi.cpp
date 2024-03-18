@@ -7,6 +7,11 @@
 
 int main(int argc, char** argv)
 {
+    std::string inverse_direct_solver = "pardiso";
+    if(argc > 2) {
+        inverse_direct_solver = argv[2];
+    }
+
     ngcomp::MyMPI mpi_init(argc, argv);
     netgen::NgMPI_Comm comm(MPI_COMM_WORLD);
     /*
@@ -79,7 +84,8 @@ int main(int argc, char** argv)
 
     arnoldi.SetShift(shift);
     // allowed is: 'sparsecholesky', 'pardiso', 'pardisospd', 'mumps', 'masterinverse', 'umfpack'
-    arnoldi.SetInverseType("pardiso");
+    arnoldi.SetInverseType(inverse_direct_solver);
+
     arnoldi.Calc(2*num+1, lams, num, evecs);
 
     for(int i = 0; i < num; i++)
@@ -106,8 +112,8 @@ int main(int argc, char** argv)
         std::stringstream ss;
         names.Append(ss.str());
         std::shared_ptr<ngcomp::GridFunctionCoefficientFunction> cf = std::make_shared<ngcomp::GridFunctionCoefficientFunction>(gfu, i);
-        auto CF = Real(cf) + Imag(cf);
-        auto norm = ngcomp::NormCF(cf);
+        std::shared_ptr<ngcomp::CoefficientFunction> CF = Real(cf) + Imag(cf);
+        std::shared_ptr<ngcomp::CoefficientFunction> norm = ngcomp::NormCF(cf);
         cfs.Append(Real(cf));
     }
 
