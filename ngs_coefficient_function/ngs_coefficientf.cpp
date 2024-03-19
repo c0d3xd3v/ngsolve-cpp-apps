@@ -1,7 +1,5 @@
 #undef NETGEN_PYTHON
 
-#include <cmath>
-
 #include <fem.hpp>
 #include <comp.hpp>
 #include <meshaccess.hpp>
@@ -19,7 +17,6 @@ class xCF : public ngfem::CoefficientFunction
             return x; // f(x, y, z)
         }
 };
-
 
 int main(int argc, char** argv)
 {

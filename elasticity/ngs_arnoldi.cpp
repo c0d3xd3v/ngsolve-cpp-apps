@@ -60,8 +60,6 @@ int main(int argc, char** argv)
                            rho * ngcomp::InnerProduct(u, v), ngfem::VOL, ngfem::VOL));
 
     ngcore::Flags flags;
-    //flags.SetFlag("type", "amgh1");
-    // ngcomp::GetPreconditionerClasses().Print(std::cout);
     // multigrid, direct, local, bddc, bddcc, bddcrc, h1amg
     auto creator = ngcomp::GetPreconditionerClasses().GetPreconditioner("local");
     std::shared_ptr<ngcomp::Preconditioner> pre = creator->creatorbf(bfa, flags, "local");

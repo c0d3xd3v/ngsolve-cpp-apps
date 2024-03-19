@@ -5,7 +5,6 @@
 #include <meshaccess.hpp>
 #include <vtkoutput.hpp>
 
-
 int main(int argc, char** argv)
 {
     std::string inverse_direct_solver = "pardiso";
@@ -40,6 +39,11 @@ int main(int argc, char** argv)
     std::shared_ptr<ngcomp::T_LinearForm<ngcore::Complex>> f = std::make_shared<ngcomp::T_LinearForm<ngcore::Complex>>(fes, "f", flags_fes);
     f->AddIntegrator(std::make_shared<ngfem::SymbolicLinearFormIntegrator>(v*c, ngfem::VOL, ngfem::VOL));
 
+    ngcore::Flags flags;
+    // multigrid, direct, local, bddc, bddcc, bddcrc, h1amg
+    auto creator = ngcomp::GetPreconditionerClasses().GetPreconditioner("local");
+    std::shared_ptr<ngcomp::Preconditioner> pre = creator->creatorbf(a, flags, "local");
+
     a->Assemble(lh);
     f->Assemble(lh);
 
@@ -47,14 +51,12 @@ int main(int argc, char** argv)
     ngcomp::BaseMatrix & am = a->GetMatrix();
     std::shared_ptr<ngcomp::BaseMatrix> inv = am.InverseMatrix(fes->GetFreeDofs());
     ngcomp::VVecExpr result = *inv * *f->GetVectorPtr();
-    std::shared_ptr<ngcomp::BaseVector> x = am.CreateColVector();
-    result.AssignTo<ngcore::Complex>(1.0, *x);
 
     ngcomp::Flags flags_gfu;
     flags_fes.SetFlag("complex", true);
     std::shared_ptr<ngcomp::GridFunction> gfu = ngcomp::CreateGridFunction(fes, "gfu", flags_gfu);
     gfu->Update();
-    gfu->GetVector().Set(1.0, *x);
+    result.AssignTo<ngcore::Complex>(1.0, gfu->GetVector());
 
     ngcore::Array<std::shared_ptr<ngcomp::CoefficientFunction>> cfs;
     cfs.Append(ngcomp::Real(gfu));
